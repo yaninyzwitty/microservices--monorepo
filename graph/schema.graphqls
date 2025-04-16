@@ -1,0 +1,93 @@
+scalar Time
+
+type Product {
+  id: ID!
+  categoryId: ID!
+  name: String!
+  description: String!
+  price: Float!
+  stock: Int!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Category {
+  id: ID!
+  name: String!
+  description: String!
+  createdAt: Time!
+}
+
+type Order {
+  id: ID!
+  userId: ID!
+  items: [OrderItem!]!
+  totalPrice: Float!
+  status: String!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type OrderItem {
+  productId: ID!
+  quantity: Int!
+  unitPrice: Float!
+}
+
+type Query {
+  getProduct(categoryId: ID!, productId: ID!): Product!
+  getCategory(id: ID!): Category!
+  listProducts(
+    categoryId: ID!
+    pagingState: String
+    pageSize: Int
+  ): ListProductsResponse!
+
+  getOrder(orderId: ID!): Order!
+  listOrders(
+    userId: ID!
+    pagingState: String
+    pageSize: Int
+  ): ListOrdersResponse!
+}
+
+type Mutation {
+  createProduct(input: CreateProductInput!): Product!
+  createCategory(input: CreateCategoryInput!): Category!
+
+  createOrder(input: CreateOrderInput!): Order!
+}
+
+input CreateProductInput {
+  name: String!
+  description: String!
+  price: Float!
+  stock: Int!
+  categoryId: ID!
+}
+
+input CreateCategoryInput {
+  name: String!
+  description: String!
+}
+
+input CreateOrderInput {
+  userId: ID!
+  items: [OrderItemInput!]!
+}
+
+input OrderItemInput {
+  productId: ID!
+  quantity: Int!
+  unitPrice: Float!
+}
+
+type ListProductsResponse {
+  products: [Product!]!
+  pagingState: String
+}
+
+type ListOrdersResponse {
+  orders: [Order!]!
+  pagingState: String
+}

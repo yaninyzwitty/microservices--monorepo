@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package orders;
+
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+
+// Order message definition
+message Order {
+  int64 id = 1;
+  int64 user_id = 2;
+  repeated OrderItem items = 3;
+  float total_price = 4;
+  string status = 5; // e.g., "PENDING", "PAID", "CANCELLED", etc.
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  string event_type = 8;
+}
+
+// OrderItem message definition
+message OrderItem {
+  int64 product_id = 1;
+  int32 quantity = 2;
+  float unit_price = 3;
+}
+
+// Service definition for managing orders
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+}
+
+// Request and response messages for order operations
+message CreateOrderRequest {
+  int64 user_id = 1;
+  repeated OrderItem items = 2;
+}
+
+message CreateOrderResponse {
+  Order order = 1;
+}
+
+message GetOrderRequest {
+  int64 order_id = 1;
+}
+
+message GetOrderResponse {
+  Order order = 1;
+}
+
+message ListOrdersRequest {
+  int64 user_id = 1;
+  bytes paging_state = 2;
+  int32 page_size = 3;
+}
+
+message ListOrdersResponse {
+  repeated Order orders = 1;
+  bytes paging_state = 2;
+}
