@@ -3,9 +3,12 @@ gqlgen-server:
 products-server:
   port: 50051
 database:
-  username: token
-  token: token
-  path : ./secure-connect.zip
+  username: yaninyzwitty
+  host: pretty-crow-12191.8nj.gcp-europe-west1.cockroachlabs.cloud
+  database: defaultdb
+  port: 26257
+  sslmode: verify-full
+  max_retries: 60
 queue:
   uri: pulsar+ssl://pulsar-aws-eucentral1.streaming.datastax.com:6651
   topic: persistent://witty-cluster/default/products-topic
