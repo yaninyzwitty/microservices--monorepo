@@ -10,7 +10,7 @@ import (
 type Config struct {
 	QqlgenServer   QqlgenServer   `yaml:"qqlgen_server"`
 	ProductsServer ProductsServer `yaml:"products_server"`
-	Astra          Database       `yaml:"database"`
+	Roach          Database       `yaml:"database"`
 }
 
 type QqlgenServer struct {
@@ -22,9 +22,12 @@ type ProductsServer struct {
 }
 
 type Database struct {
-	Uri   string `yaml:"uri"`
-	Topic string `yaml:"topic"`
-	// token
+	Username   string `yaml:"username"`
+	Host       string `yaml:"host"`
+	DbName     string `yaml:"database"`
+	Port       int    `yaml:"port"`
+	SSLMode    string `yaml:"sslmode"`
+	MaxRetries int    `yaml:"max_retries"`
 }
 
 func (c *Config) LoadConfig(file io.Reader) error {
