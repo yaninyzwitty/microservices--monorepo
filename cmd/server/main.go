@@ -17,6 +17,7 @@ import (
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/queue"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/snowflake"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -39,6 +40,11 @@ func main() {
 
 	if err := godotenv.Load(); err != nil {
 		slog.Error("failed to load .env file", "error", err)
+		os.Exit(1)
+	}
+
+	if err := snowflake.InitSonyFlake(); err != nil {
+		slog.Error("failed to initialize snowflake", "error", err)
 		os.Exit(1)
 	}
 

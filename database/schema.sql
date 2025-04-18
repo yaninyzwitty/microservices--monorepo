@@ -19,3 +19,11 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
+
+CREATE TABLE outbox (
+  id BIGINT PRIMARY KEY,
+  event_type TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT now(),
+  processed_at TIMESTAMP
+);
