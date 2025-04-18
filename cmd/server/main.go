@@ -2,15 +2,23 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/controller"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/database"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/helpers"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/queue"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -58,7 +66,7 @@ func main() {
 
 	slog.Info("Connected to CockroachDB successfully")
 
-	// pool := db.Pool()
+	pool := db.Pool()
 
 	pulsarToken := helpers.GetEnvOrDefault("PULSAR_TOKEN", "")
 	if password == "" {
@@ -92,5 +100,40 @@ func main() {
 		os.Exit(1)
 	}
 	defer pulsarProducer.Close()
+	grpcAddress := fmt.Sprintf(":%d", cfg.GrpcServer.Port)
+	lis, err := net.Listen("tcp", grpcAddress)
+	if err != nil {
+		slog.Error("failed to listen", "error", err)
+		os.Exit(1)
+	}
+
+	productController := controller.NewProductController(pool)
+
+	server := grpc.NewServer()
+	reflection.Register(server) //use server reflection, not required
+	pb.RegisterProductServiceServer(server, productController)
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	stopCH := make(chan os.Signal, 1)
+
+	go func() {
+		sig := <-sigChan
+		slog.Info("Received shutdown signal", "signal", sig)
+		slog.Info("Shutting down gRPC server...")
+
+		// Gracefully stop the Command gRPC server
+		server.GracefulStop()
+		cancel()      // Cancel context for other goroutines
+		close(stopCH) // Notify the polling goroutine to stop
+
+		slog.Info("gRPC server has been stopped gracefully")
+	}()
+
+	slog.Info("Starting Command gRPC server", "port", cfg.GrpcServer.Port)
+	if err := server.Serve(lis); err != nil {
+		slog.Error("gRPC server encountered an error while serving", "error", err)
+		os.Exit(1)
+	}
 
 }
