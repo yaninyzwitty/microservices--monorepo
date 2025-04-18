@@ -7,6 +7,7 @@ require (
 	github.com/apache/pulsar-client-go v0.14.0
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/joho/godotenv v1.5.1
+	github.com/sony/sonyflake v1.2.0
 	github.com/vektah/gqlparser/v2 v2.5.23
 	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.5
