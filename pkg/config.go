@@ -11,6 +11,12 @@ type Config struct {
 	QqlgenServer   QqlgenServer   `yaml:"qqlgen_server"`
 	ProductsServer ProductsServer `yaml:"products_server"`
 	Roach          Database       `yaml:"database"`
+	Queue          Queue          `yaml:"queue"`
+}
+
+type Queue struct {
+	Uri   string `yaml:"uri"`
+	Topic string `yaml:"topic"`
 }
 
 type QqlgenServer struct {

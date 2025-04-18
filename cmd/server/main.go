@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"time"
@@ -9,9 +10,12 @@ import (
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/database"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/helpers"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/queue"
 )
 
 func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	var cfg pkg.Config
 	file, err := os.Open("config.yaml")
 	if err != nil {
@@ -55,5 +59,38 @@ func main() {
 	slog.Info("Connected to CockroachDB successfully")
 
 	// pool := db.Pool()
+
+	pulsarToken := helpers.GetEnvOrDefault("PULSAR_TOKEN", "")
+	if password == "" {
+		slog.Warn("PULSAR_TOKEN is empty - make sure this is intentional")
+		os.Exit(1)
+	}
+
+	pulsarCfg := &queue.Config{
+		URI:       cfg.Queue.Uri,
+		TopicName: cfg.Queue.Topic,
+		Token:     pulsarToken,
+	}
+
+	// initialize pulsar service
+	pulsarService := queue.NewService(pulsarCfg)
+
+	// create pulsar client
+
+	pulsarClient, err := pulsarService.CreateConnection(ctx)
+
+	if err != nil {
+		slog.Error("failed to create pulsar client", "error", err)
+		os.Exit(1)
+	}
+
+	defer pulsarClient.Close()
+
+	pulsarProducer, err := pulsarService.CreateProducer(ctx, pulsarClient)
+	if err != nil {
+		slog.Error("failed to create pulsar producer", "error", err)
+		os.Exit(1)
+	}
+	defer pulsarProducer.Close()
 
 }
