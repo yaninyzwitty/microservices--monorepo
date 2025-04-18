@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	QqlgenServer   QqlgenServer   `yaml:"qqlgen_server"`
+	GrpcServer     GrpcServer     `yaml:"products-server"`
 	ProductsServer ProductsServer `yaml:"products_server"`
 	Roach          Database       `yaml:"database"`
 	Queue          Queue          `yaml:"queue"`
@@ -20,6 +21,9 @@ type Queue struct {
 }
 
 type QqlgenServer struct {
+	Port int `yaml:"port"`
+}
+type GrpcServer struct {
 	Port int `yaml:"port"`
 }
 
