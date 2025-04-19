@@ -2,13 +2,17 @@ package controller
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/snowflake"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/snowflake"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -308,6 +312,97 @@ func (c *ProductController) GetCategory(ctx context.Context, req *pb.GetCategory
 }
 
 func (c *ProductController) ListProducts(ctx context.Context, req *pb.ListProductsRequest) (*pb.ListProductsResponse, error) {
+	const defaultPageSize = 5
+	pageSize := req.GetPageSize()
+	if pageSize <= 0 {
+		pageSize = defaultPageSize
+	}
 
-	return &pb.ListProductsResponse{}, nil
+	var (
+		args       []interface{}
+		conditions []string
+		query      string
+	)
+	// Always filter by category_id
+	args = append(args, req.GetCategoryId())
+	conditions = append(conditions, "category_id = $1")
+	argPos := 2
+
+	var cursorCreatedAt time.Time
+	// var cursorID int64
+
+	// Decode cursor if present
+	if req.GetCursor() != "" {
+		var decoded struct {
+			CreatedAt string `json:"created_at"`
+			ID        int64  `json:"id"`
+		}
+		data, err := base64.StdEncoding.DecodeString(req.GetCursor())
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid cursor")
+		}
+		if err := json.Unmarshal(data, &decoded); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "malformed cursor JSON")
+		}
+
+		cursorCreatedAt, err = time.Parse(time.RFC3339Nano, decoded.CreatedAt)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid timestamp in cursor")
+		}
+
+		args = append(args, cursorCreatedAt, decoded.ID)
+		conditions = append(conditions, fmt.Sprintf("(created_at, id) < ($%d, $%d)", argPos, argPos+1))
+		argPos += 2
+	}
+
+	// Compose final query
+	query = fmt.Sprintf(`
+        SELECT id, category_id, name, description, price, created_at, updated_at
+        FROM products
+        WHERE %s
+        ORDER BY created_at DESC, id DESC
+        LIMIT %d
+    `, strings.Join(conditions, " AND "), pageSize)
+
+	rows, err := c.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "query error: %v", err)
+	}
+	defer rows.Close()
+
+	var (
+		products    []*pb.Product
+		lastCreated time.Time
+		lastID      int64
+	)
+
+	for rows.Next() {
+		var p pb.Product
+		var createdAt, updatedAt time.Time
+		if err := rows.Scan(&p.Id, &p.CategoryId, &p.Name, &p.Description, &p.Price, &createdAt, &updatedAt); err != nil {
+			return nil, status.Errorf(codes.Internal, "row scan error: %v", err)
+		}
+		p.CreatedAt = timestamppb.New(createdAt)
+		p.UpdatedAt = timestamppb.New(updatedAt)
+
+		products = append(products, &p)
+		lastCreated = createdAt
+		lastID = p.Id
+	}
+
+	// Build next_cursor if there are more results
+	var nextCursor string
+	if len(products) == int(pageSize) {
+		cursorData, _ := json.Marshal(map[string]interface{}{
+			"created_at": lastCreated.Format(time.RFC3339Nano),
+			"id":         lastID,
+		})
+		nextCursor = base64.StdEncoding.EncodeToString(cursorData)
+	}
+
+	return &pb.ListProductsResponse{
+		Products:   products,
+		NextCursor: nextCursor,
+	}, nil
+
 }
