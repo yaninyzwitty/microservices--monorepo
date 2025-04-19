@@ -8,7 +8,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/graph/model"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/api-gateway/graph/model"
 )
 
 // CreateProduct is the resolver for the createProduct field.

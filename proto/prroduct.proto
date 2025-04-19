@@ -58,14 +58,15 @@ message GetProductResponse {
 
 message ListProductsRequest {
   int64 category_id = 1;
-  bytes paging_state = 2;
+  string cursor = 2;     
   int32 page_size = 3;
 }
 
 message ListProductsResponse {
   repeated Product products = 1;
-  bytes paging_state = 2;
+  string next_cursor = 2; 
 }
+
 
 // Request and response messages for category operations
 message CreateCategoryRequest {

@@ -11,7 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/vektah/gqlparser/v2/ast"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/graph"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/api-gateway/graph"
 )
 
 const defaultPort = "8080"

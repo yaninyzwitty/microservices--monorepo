@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/controller"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/database"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/helpers"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/queue"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/snowflake"
+	pkg "github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/config"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/database"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/queue"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/snowflake"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/products-service/controller"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -58,9 +58,9 @@ func main() {
 		Host:     cfg.Roach.Host,
 		Port:     cfg.Roach.Port,
 		User:     cfg.Roach.Username,
+		Password: password,
 		Database: cfg.Roach.DbName,
 		SSLMode:  cfg.Roach.SSLMode,
-		Password: password,
 	}
 
 	db, err := database.NewDB(cfg.Roach.MaxRetries, 1*time.Second, roachConfig)
@@ -85,7 +85,6 @@ func main() {
 		TopicName: cfg.Queue.Topic,
 		Token:     pulsarToken,
 	}
-
 	// initialize pulsar service
 	pulsarService := queue.NewService(pulsarCfg)
 
