@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg"
+	pkg "github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

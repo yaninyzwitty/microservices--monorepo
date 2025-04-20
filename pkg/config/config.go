@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	QqlgenServer   QqlgenServer   `yaml:"qqlgen_server"`
+	QqlgenServer   QqlgenServer   `yaml:"gqlgen-server"`
 	GrpcServer     GrpcServer     `yaml:"products-server"`
 	ProductsServer ProductsServer `yaml:"products_server"`
 	Roach          Database       `yaml:"database"`
