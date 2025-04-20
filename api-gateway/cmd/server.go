@@ -19,7 +19,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/vektah/gqlparser/v2/ast"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/api-gateway/graph"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/graph"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
 	pkg "github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/config"
 	"google.golang.org/grpc"

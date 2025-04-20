@@ -157,3 +157,9 @@ models:
     fields:
       items:
         resolver: true
+  Product:
+    fields:
+      category:
+        resolver: true
+
+  

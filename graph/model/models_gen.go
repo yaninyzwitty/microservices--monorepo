@@ -56,16 +56,5 @@ type OrderItemInput struct {
 	UnitPrice float64 `json:"unitPrice"`
 }
 
-type Product struct {
-	ID          string    `json:"id"`
-	CategoryID  string    `json:"categoryId"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Price       float64   `json:"price"`
-	Stock       int32     `json:"stock"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-}
-
 type Query struct {
 }
