@@ -3,6 +3,7 @@ scalar Time
 type Product {
   id: ID!
   categoryId: ID!
+  category: Category!
   name: String!
   description: String!
   price: Float!
