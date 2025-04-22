@@ -13,6 +13,7 @@ type Config struct {
 	ProductsServer ProductsServer `yaml:"products_server"`
 	Roach          Database       `yaml:"database"`
 	Queue          Queue          `yaml:"queue"`
+	Processer      Processer      `yaml:"processer-server"`
 }
 
 type Queue struct {
@@ -21,6 +22,9 @@ type Queue struct {
 }
 
 type QqlgenServer struct {
+	Port int `yaml:"port"`
+}
+type Processer struct {
 	Port int `yaml:"port"`
 }
 type GrpcServer struct {

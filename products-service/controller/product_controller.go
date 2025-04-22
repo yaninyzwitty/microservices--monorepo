@@ -246,16 +246,20 @@ func (c *ProductController) GetProduct(ctx context.Context, req *pb.GetProductRe
 
 	// Fetch the product from the database
 	var product pb.Product
+	var createdAt time.Time
+	var updatedAt time.Time
 	err := c.pool.QueryRow(ctx, selectProductQuery, req.ProductId).Scan(
 		&product.Id,
 		&product.CategoryId,
 		&product.Name,
 		&product.Description,
 		&product.Price,
-		&product.CreatedAt,
-		&product.UpdatedAt,
+		&createdAt,
+		&updatedAt,
 	)
 
+	product.CreatedAt = timestamppb.New(createdAt)
+	product.UpdatedAt = timestamppb.New(updatedAt)
 	// Handle case where product is not found
 	if err == pgx.ErrNoRows {
 		return nil, status.Errorf(codes.NotFound, "product not found with id: %d", req.ProductId)
@@ -278,14 +282,13 @@ func (c *ProductController) GetCategory(ctx context.Context, req *pb.GetCategory
 		return nil, status.Errorf(codes.InvalidArgument, "invalid category id: %d", req.Id)
 	}
 
-	slog.Info("value", "id", req.Id)
 	// Query to fetch the category from the database
-	selectCategoryQuery := `select id, name, description, created_at from categories where id = 133592043875221505`
+	selectCategoryQuery := `select id, name, description, created_at from categories where id = $1`
 
 	// Fetch the category from the database
 	var category pb.Category
 	var createdAt time.Time
-	err := c.pool.QueryRow(ctx, selectCategoryQuery).Scan(
+	err := c.pool.QueryRow(ctx, selectCategoryQuery, req.Id).Scan(
 		&category.Id,
 		&category.Name,
 		&category.Description,
@@ -319,7 +322,7 @@ func (c *ProductController) ListProducts(ctx context.Context, req *pb.ListProduc
 	}
 
 	var (
-		args       []interface{}
+		args       []any
 		conditions []string
 		query      string
 	)

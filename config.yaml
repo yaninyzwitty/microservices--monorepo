@@ -2,6 +2,8 @@ gqlgen-server:
   port: 3000
 products-server:
   port: 50051
+processer-server:
+  port: 8080
 database:
   username: yaninyzwitty
   host: pretty-crow-12191.8nj.gcp-europe-west1.cockroachlabs.cloud

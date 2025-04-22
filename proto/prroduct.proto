@@ -91,3 +91,11 @@ message GetCategoryResponse {
   string description = 3;
   google.protobuf.Timestamp created_at = 4;
 }
+
+message OutboxEvent {
+  int64 id = 1;
+  string event_type = 2;
+  bytes payload = 3; //you cant know the exact type as its based on event type
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp processed_at = 5;
+}
