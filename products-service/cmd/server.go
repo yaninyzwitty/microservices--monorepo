@@ -15,7 +15,6 @@ import (
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
 	pkg "github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/config"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/database"
-	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/queue"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/snowflake"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/products-service/controller"
 	"google.golang.org/grpc"
@@ -23,7 +22,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	_, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	var cfg pkg.Config
@@ -49,9 +48,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	password := helpers.GetEnvOrDefault("COCROACH_PASSWORD", "")
+	password := helpers.GetEnvOrDefault("COCKROACH_PASSWORD", "")
 	if password == "" {
-		slog.Warn("COCROACH_PASSWORD is empty - make sure this is intentional")
+		slog.Warn("COCKROACH_PASSWORD is empty - make sure this is intentional")
 	}
 
 	roachConfig := &database.DBConfig{
@@ -72,32 +71,6 @@ func main() {
 
 	slog.Info("Connected to CockroachDB successfully")
 	pool := db.Pool()
-
-	pulsarToken := helpers.GetEnvOrDefault("PULSAR_TOKEN", "")
-	if pulsarToken == "" {
-		slog.Warn("PULSAR_TOKEN is empty - make sure this is intentional")
-	}
-
-	pulsarCfg := &queue.Config{
-		URI:       cfg.Queue.Uri,
-		TopicName: cfg.Queue.Topic,
-		Token:     pulsarToken,
-	}
-	pulsarService := queue.NewService(pulsarCfg)
-
-	pulsarClient, err := pulsarService.CreateConnection(ctx)
-	if err != nil {
-		slog.Error("failed to create pulsar client", "error", err)
-		os.Exit(1)
-	}
-	defer pulsarClient.Close()
-
-	pulsarProducer, err := pulsarService.CreateProducer(ctx, pulsarClient)
-	if err != nil {
-		slog.Error("failed to create pulsar producer", "error", err)
-		os.Exit(1)
-	}
-	defer pulsarProducer.Close()
 
 	grpcAddress := fmt.Sprintf(":%d", cfg.GrpcServer.Port)
 	lis, err := net.Listen("tcp", grpcAddress)

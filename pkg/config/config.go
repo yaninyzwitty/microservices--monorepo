@@ -8,11 +8,18 @@ import (
 )
 
 type Config struct {
-	QqlgenServer   QqlgenServer   `yaml:"gqlgen-server"`
-	GrpcServer     GrpcServer     `yaml:"products-server"`
-	ProductsServer ProductsServer `yaml:"products_server"`
-	Roach          Database       `yaml:"database"`
-	Queue          Queue          `yaml:"queue"`
+	QqlgenServer       QqlgenServer       `yaml:"gqlgen-server"`
+	GrpcServer         GrpcServer         `yaml:"products-server"`
+	ProductsServer     ProductsServer     `yaml:"products_server"`
+	Roach              Database           `yaml:"database"`
+	Queue              Queue              `yaml:"queue"`
+	Processer          Processer          `yaml:"processer-server"`
+	NotificationServer NotificationServer `yaml:"notification-server"`
+}
+
+type NotificationServer struct {
+	Port          int    `yaml:"port"`
+	ConsumerTopic string `yaml:"consumer_topic"`
 }
 
 type Queue struct {
@@ -21,6 +28,9 @@ type Queue struct {
 }
 
 type QqlgenServer struct {
+	Port int `yaml:"port"`
+}
+type Processer struct {
 	Port int `yaml:"port"`
 }
 type GrpcServer struct {

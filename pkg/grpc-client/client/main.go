@@ -41,15 +41,11 @@ func main() {
 	commandClient := pb.NewProductServiceClient(commandConn)
 
 	// Create product request with proper data
-	req := &pb.CreateProductRequest{
-		Name:        "kali",
-		Description: "jenna",
-		Price:       32.44,
-		Stock:       100,
-		CategoryId:  int64(133592043875221505),
+	req := &pb.GetProductRequest{
+		ProductId: int64(133908968102711297),
 	}
 
-	resp, err := commandClient.CreateProduct(ctx, req)
+	resp, err := commandClient.GetProduct(ctx, req)
 	if err != nil {
 		slog.Error("Failed to create product", "error", err)
 		os.Exit(1)
