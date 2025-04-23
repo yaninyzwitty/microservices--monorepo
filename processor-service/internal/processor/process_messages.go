@@ -27,7 +27,7 @@ func (pm *ProcessMessage) ProcessMessages(ctx context.Context) error {
 	}
 
 	for _, message := range messages {
-		slog.Info("started processing messages")
+		slog.Info("started processing messages...")
 		payload, err := pm.handleEvent(message)
 
 		if err != nil {
@@ -52,10 +52,12 @@ func (pm *ProcessMessage) ProcessMessages(ctx context.Context) error {
 }
 
 func (pm *ProcessMessage) handleEvent(message *pb.OutboxEvent) ([]byte, error) {
+
 	switch message.EventType {
 	case "category.created":
 		return events.HandleCategoryCreated(string(message.Payload))
 	case "product.created":
+
 		return events.HandleProductCreated(string(message.Payload))
 	default:
 		slog.Warn("Unknown event type, skipping", "eventType", message.EventType, "messageID", message.Id)
