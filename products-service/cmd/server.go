@@ -48,9 +48,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	password := helpers.GetEnvOrDefault("COCROACH_PASSWORD", "")
+	password := helpers.GetEnvOrDefault("COCKROACH_PASSWORD", "")
 	if password == "" {
-		slog.Warn("COCROACH_PASSWORD is empty - make sure this is intentional")
+		slog.Warn("COCKROACH_PASSWORD is empty - make sure this is intentional")
 	}
 
 	roachConfig := &database.DBConfig{
