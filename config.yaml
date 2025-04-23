@@ -4,6 +4,9 @@ products-server:
   port: 50051
 processer-server:
   port: 8080
+notification-server:
+  port: 8081
+  consumer_topic: "persistent://witty-cluster/default/products-topic"
 database:
   username: yaninyzwitty
   host: pretty-crow-12191.8nj.gcp-europe-west1.cockroachlabs.cloud
