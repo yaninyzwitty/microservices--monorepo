@@ -63,7 +63,7 @@ func main() {
 	}
 	defer pulsarClient.Close()
 
-	pulsarConsumer, err := pulsarService.CreateConsumer(ctx, pulsarClient, cfg.NotificationServer.ConsumerTopic)
+	pulsarConsumer, err := pulsarService.CreateConsumer(ctx, pulsarClient, cfg.NotificationServer.ConsumerTopic, "notification-service-1")
 	if err != nil {
 		slog.Error("failed to create pulsar consumer", "error", err)
 		os.Exit(1)
