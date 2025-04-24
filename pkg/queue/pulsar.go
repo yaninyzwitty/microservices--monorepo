@@ -20,6 +20,10 @@ type Service struct {
 	cfg *Config
 }
 
+var (
+	subscriptionName = "my-subscription"
+)
+
 // NewService creates a new Pulsar service.
 func NewService(cfg *Config) *Service {
 	return &Service{cfg: cfg}
@@ -51,10 +55,11 @@ func (s *Service) CreateProducer(ctx context.Context, client pulsar.Client) (pul
 }
 
 // CreateConsumer creates a consumer for a specific topic.
-func (s *Service) CreateConsumer(ctx context.Context, client pulsar.Client, consumerTopic string) (pulsar.Consumer, error) {
+func (s *Service) CreateConsumer(ctx context.Context, client pulsar.Client, consumerTopic, subscriptionName string) (pulsar.Consumer, error) {
+
 	consumer, err := client.Subscribe(pulsar.ConsumerOptions{
 		Topic:                       consumerTopic,
-		SubscriptionName:            "my-subscription",
+		SubscriptionName:            subscriptionName,
 		SubscriptionInitialPosition: pulsar.SubscriptionPositionEarliest,
 	})
 	if err != nil {

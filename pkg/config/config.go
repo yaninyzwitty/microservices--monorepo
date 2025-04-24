@@ -15,6 +15,11 @@ type Config struct {
 	Queue              Queue              `yaml:"queue"`
 	Processer          Processer          `yaml:"processer-server"`
 	NotificationServer NotificationServer `yaml:"notification-server"`
+	StockServer        StockServer        `yaml:"stock-server"`
+}
+
+type StockServer struct {
+	Port int `yaml:"port"`
 }
 
 type NotificationServer struct {

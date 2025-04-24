@@ -1,5 +1,7 @@
 gqlgen-server:
   port: 3000
+stock-server:
+  port: 50052
 products-server:
   port: 50051
 processer-server:
