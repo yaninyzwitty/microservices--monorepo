@@ -7,7 +7,7 @@ products-server:
 processer-server:
   port: 8080
 notification-server:
-  port: 8081
+  port: 50053
   consumer_topic: "persistent://witty-cluster/default/products-topic"
 database:
   username: yaninyzwitty

@@ -21,7 +21,7 @@ func NewStockService(stockController *controller.StockController) *StockService 
 }
 
 func (s *StockService) CreateStockProduct(ctx context.Context, product *pb.Product) error {
-	warehouseIds := []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	warehouseIds := []int64{134496091390406657, 134496170075549697, 134496187540631553, 134496202942115841, 134496215558582273}
 	randIdx := rand.Intn(len(warehouseIds))
 
 	stockResponse, err := s.stockController.CreateStock(ctx, &pb.CreateStockRequest{

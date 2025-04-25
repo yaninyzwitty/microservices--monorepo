@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -87,4 +88,22 @@ func (r *StockRepository) AddStockProduct(ctx context.Context, stockLevel *pb.St
 
 	slog.Info("Transaction committed", "productId", stockLevel.ProductId)
 	return stockLevel, nil
+}
+
+func (r *StockRepository) AddWarehouse(ctx context.Context, warehouse *pb.Warehouse) (*pb.Warehouse, error) {
+	insertWarehouseQuery := `
+	INSERT INTO warehouses (id, name, location)
+	VALUES ($1, $2, $3) returning id, name, location, created_at
+`
+
+	var warehouseRes pb.Warehouse
+	var createdAt time.Time
+	err := r.pool.QueryRow(ctx, insertWarehouseQuery,
+		warehouse.Id, warehouse.Name, warehouse.Location).Scan(&warehouseRes.Id, &warehouse.Name, &warehouse.Location, &createdAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to insert warehouse: %w", err)
+	}
+	warehouseRes.CreatedAt = timestamppb.New(createdAt)
+	return &warehouseRes, nil
+
 }

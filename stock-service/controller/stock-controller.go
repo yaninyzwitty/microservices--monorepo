@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
+	"github.com/yaninyzwitty/eccomerce-microservices-backend/pkg/snowflake"
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/stock-service/repository"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -49,7 +50,29 @@ func (c *StockController) RemoveAllFromStock(ctx context.Context, req *pb.Remove
 	return nil, nil
 }
 func (c *StockController) AddWarehouse(ctx context.Context, req *pb.AddWarehouseRequest) (*pb.AddWarehouseResponse, error) {
-	return nil, nil
+	if req.Name == "" || req.Location == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid name or location")
+	}
+
+	warehouseId, err := snowflake.GenerateID()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to generate warehouse id: %v", err)
+	}
+
+	AddWarehouseResponse, err := c.stockRepo.AddWarehouse(ctx, &pb.Warehouse{
+		Id:        int64(warehouseId),
+		Name:      req.Name,
+		Location:  req.Location,
+		CreatedAt: timestamppb.Now(),
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to create warehouse: %v", err)
+
+	}
+
+	return &pb.AddWarehouseResponse{
+		Warehouse: AddWarehouseResponse,
+	}, nil
 }
 func (c *StockController) DeleteWarehouse(ctx context.Context, req *pb.DeleteWarehouseRequest) (*pb.DeleteWarehouseResponse, error) {
 	return nil, nil
