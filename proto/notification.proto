@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package notifications;
+
+option go_package = "./pb";
+import "google/protobuf/timestamp.proto";
+
+
+message SendProductEmailRequest {
+  int64 id = 1;
+  int64 category_id = 2;
+  string name = 3;
+  string description = 4;
+  float price = 5;
+  int32 stock = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+
+}
+
+message SendProductEmailResponse {
+  bool success = 1;
+  string email_id = 2;
+  optional string error = 3;        
+}
+
+message SendStockEmailRequest {
+      int64 product_id = 1;
+    int64 warehouse_id = 2;
+    int32 quantity = 3; 
+    google.protobuf.Timestamp created_at = 4;
+
+
+}
+
+message SendStockEmailResponse {
+  bool success = 1;
+  string email_id = 2;
+  optional string error = 3;        
+}
+
+service NotificationService {
+  rpc SendProductEmail(SendProductEmailRequest) returns (SendProductEmailResponse);
+  rpc SendStockEmail(SendStockEmailRequest) returns (SendStockEmailResponse);
+}
