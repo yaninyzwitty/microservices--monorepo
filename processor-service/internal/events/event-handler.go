@@ -31,3 +31,12 @@ func HandleProductCreated(payload string) ([]byte, error) {
 
 	return protojson.Marshal(product)
 }
+func HandleStockCreated(payload string) ([]byte, error) {
+	stockLevel := &pb.StockLevel{} // ✅ properly allocated
+
+	if err := protojson.Unmarshal([]byte(payload), stockLevel); err != nil {
+		return nil, fmt.Errorf("error unmarshalling product: %w", err)
+	}
+
+	return protojson.Marshal(stockLevel)
+}

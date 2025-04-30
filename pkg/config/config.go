@@ -16,9 +16,13 @@ type Config struct {
 	Processer          Processer          `yaml:"processer-server"`
 	NotificationServer NotificationServer `yaml:"notification-server"`
 	StockServer        StockServer        `yaml:"stock-server"`
+	UserServer         UserServer         `yaml:"user-server"`
 }
 
 type StockServer struct {
+	Port int `yaml:"port"`
+}
+type UserServer struct {
 	Port int `yaml:"port"`
 }
 

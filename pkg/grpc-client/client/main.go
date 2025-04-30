@@ -17,6 +17,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	var cfg pkg.Config
 	file, err := os.Open("config.yaml")
 	if err != nil {
@@ -30,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	commandAddress := fmt.Sprintf(":%d", cfg.GrpcServer.Port)
+	commandAddress := fmt.Sprintf(":%d", cfg.UserServer.Port)
 	commandConn, err := grpc.Dial(commandAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		slog.Error("failed to create grpc client", "error", err)
@@ -38,21 +40,19 @@ func main() {
 	}
 	defer commandConn.Close()
 
-	commandClient := pb.NewProductServiceClient(commandConn)
+	commandClient := pb.NewUserServiceClient(commandConn)
 
 	// Create product request with proper data
-	req := &pb.GetProductRequest{
-		ProductId: int64(133908968102711297),
+	req := &pb.ListUsersRequest{
+		Limit: 1,
 	}
 
-	resp, err := commandClient.GetProduct(ctx, req)
+	resp, err := commandClient.ListUsers(ctx, req)
 	if err != nil {
-		slog.Error("Failed to create product", "error", err)
+		slog.Error("Failed to create user", "error", err)
 		os.Exit(1)
 	}
 
-	slog.Info("val", "name", resp.Product.Name)
-	slog.Info("val", "id", resp.Product.Id)
-	slog.Info("val", "description", resp.Product.Description)
+	logger.Info("listing users", slog.Any("users", resp.Users))
 
 }
