@@ -122,54 +122,56 @@ func main() {
 	}()
 
 	go func() {
-
 		for {
 			msg, err := pulsarConsumer.Receive(ctx)
 			if err != nil {
+				if ctx.Err() != nil {
+					slog.Info("Receive interrupted due to shutdown, exiting message loop...")
+					return
+				}
+
 				slog.Error("failed to receive pulsar message", "error", err)
-				pulsarConsumer.Nack(msg)
-				continue
-			} else {
 
-				type EventHandler func([]byte) error
-				eventHandler := map[string]EventHandler{
-					"product.created": func(payload []byte) error {
-						var product pb.Product
-						if err := protojson.Unmarshal(payload, &product); err != nil {
-							return err
-						}
-
-						notificationService := service.NewNotificationService(notificationController)
-						return notificationService.SendProductNotification(ctx, &product)
-					},
-					"stock.created": func(payload []byte) error {
-						var stockLevel pb.StockLevel
-						if err := protojson.Unmarshal(payload, &stockLevel); err != nil {
-							return err
-						}
-
-						notificationService := service.NewNotificationService(notificationController)
-						return notificationService.SendStockNotification(ctx, &stockLevel)
-					},
-				}
-				eventType := strings.Split(msg.Key(), ":")[0]
-				if handler, ok := eventHandler[eventType]; ok {
-					if err := handler(msg.Payload()); err != nil {
-						slog.Error("handler error", "error", err)
-						pulsarConsumer.Nack(msg)
-					} else {
-						pulsarConsumer.Ack(msg)
-					}
-				} else {
-					slog.Error("unknown event type", "event_type", eventType)
+				// Only call Nack if msg is not nil
+				if msg != nil {
 					pulsarConsumer.Nack(msg)
-
 				}
-
+				continue
 			}
 
-		}
+			type EventHandler func([]byte) error
+			eventHandler := map[string]EventHandler{
+				"product.created": func(payload []byte) error {
+					var product pb.Product
+					if err := protojson.Unmarshal(payload, &product); err != nil {
+						return err
+					}
+					notificationService := service.NewNotificationService(notificationController)
+					return notificationService.SendProductNotification(ctx, &product)
+				},
+				"stock.created": func(payload []byte) error {
+					var stockLevel pb.StockLevel
+					if err := protojson.Unmarshal(payload, &stockLevel); err != nil {
+						return err
+					}
+					notificationService := service.NewNotificationService(notificationController)
+					return notificationService.SendStockNotification(ctx, &stockLevel)
+				},
+			}
 
+			eventType := strings.Split(msg.Key(), ":")[0]
+			if handler, ok := eventHandler[eventType]; ok {
+				if err := handler(msg.Payload()); err != nil {
+					slog.Error("handler error", "error", err)
+					pulsarConsumer.Nack(msg)
+				} else {
+					pulsarConsumer.Ack(msg)
+				}
+			} else {
+				slog.Error("unknown event type", "event_type", eventType)
+				pulsarConsumer.Nack(msg)
+			}
+		}
 	}()
 
 	slog.Info("Starting gRPC server", "port", cfg.StockServer.Port)
