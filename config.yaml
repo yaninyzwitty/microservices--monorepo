@@ -1,5 +1,7 @@
 gqlgen-server:
   port: 3000
+order-server:
+  port: 50055
 user-server:
   port: 50054
 stock-server:
