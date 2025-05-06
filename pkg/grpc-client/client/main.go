@@ -32,27 +32,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	commandAddress := fmt.Sprintf(":%d", cfg.UserServer.Port)
-	commandConn, err := grpc.Dial(commandAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	commandAddress := fmt.Sprintf(":%d", cfg.OrderServer.Port)
+	commandConn, err := grpc.NewClient(commandAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		slog.Error("failed to create grpc client", "error", err)
 		os.Exit(1)
 	}
 	defer commandConn.Close()
 
-	commandClient := pb.NewUserServiceClient(commandConn)
+	commandClient := pb.NewOrderServiceClient(commandConn)
 
 	// Create product request with proper data
-	req := &pb.ListUsersRequest{
-		Limit: 1,
+	req := &pb.GetOrderRequest{
+		OrderId: int64(135469340458799105),
 	}
 
-	resp, err := commandClient.ListUsers(ctx, req)
+	resp, err := commandClient.GetOrder(ctx, req)
 	if err != nil {
 		slog.Error("Failed to create user", "error", err)
 		os.Exit(1)
 	}
 
-	logger.Info("listing users", slog.Any("users", resp.Users))
+	logger.Info("listing orders", slog.Any("order", resp.Order))
 
 }
