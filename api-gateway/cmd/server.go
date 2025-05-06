@@ -45,19 +45,29 @@ func main() {
 	mux := chi.NewRouter()
 	mux.Use(middleware.Logger)
 
-	grpcClientAddress := fmt.Sprintf(":%d", cfg.GrpcServer.Port)
+	productGrpcClientAddress := fmt.Sprintf(":%d", cfg.GrpcServer.Port)
+	orderGrpcClientAddress := fmt.Sprintf(":%d", cfg.OrderServer.Port)
 
-	grpcConn, err := grpc.NewClient(grpcClientAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// Corrected gRPC Dial method
+	productGrpcGrpcConn, err := grpc.NewClient(productGrpcClientAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		slog.Error("failed to create grpc client", "error", err)
 		os.Exit(1)
 	}
-	defer grpcConn.Close()
+	defer productGrpcGrpcConn.Close()
 
-	productClient := pb.NewProductServiceClient(grpcConn)
+	orderGrpcConn, err := grpc.NewClient(orderGrpcClientAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		slog.Error("failed to create grpc client", "error", err)
+		os.Exit(1)
+	}
+	defer orderGrpcConn.Close()
 
+	productClient := pb.NewProductServiceClient(productGrpcGrpcConn)
+	orderClient := pb.NewOrderServiceClient(orderGrpcConn)
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		ProductClient: productClient,
+		OrderClient:   orderClient,
 	}}))
 
 	srv.AddTransport(transport.Options{})

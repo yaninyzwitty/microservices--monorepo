@@ -60,6 +60,8 @@ func (pm *ProcessMessage) handleEvent(message *pb.OutboxEvent) ([]byte, error) {
 		return events.HandleProductCreated(string(message.Payload))
 	case "stock.created":
 		return events.HandleStockCreated(string(message.Payload))
+	case "order.created":
+		return events.HandleOrderCreated(string(message.Payload))
 	default:
 		slog.Warn("Unknown event type, skipping", "eventType", message.EventType, "messageID", message.Id)
 		return nil, nil

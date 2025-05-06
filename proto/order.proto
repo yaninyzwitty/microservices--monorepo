@@ -15,7 +15,6 @@ message Order {
   string status = 5; // e.g., "PENDING", "PAID", "CANCELLED", etc.
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
-  string event_type = 8;
 }
 
 // OrderItem message definition
@@ -52,11 +51,10 @@ message GetOrderResponse {
 
 message ListOrdersRequest {
   int64 user_id = 1;
-  bytes paging_state = 2;
-  int32 page_size = 3;
+  int32 limit = 2;
+  int32 offset = 3;
 }
 
 message ListOrdersResponse {
   repeated Order orders = 1;
-  bytes paging_state = 2;
 }

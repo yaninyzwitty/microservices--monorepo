@@ -2,7 +2,6 @@ package events
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -14,14 +13,18 @@ func HandleCategoryCreated(payload string) ([]byte, error) {
 		return nil, fmt.Errorf("error unmarshalling category: %w", err)
 	}
 
-	slog.Info("name", "val", category.Name)
-	slog.Info("id", "val", category.Id)
-	slog.Info("description", "val", category.Description)
-	slog.Info("createdAt", "val", category.CreatedAt)
-
 	return protojson.Marshal(category)
 }
 
+func HandleOrderCreated(payload string) ([]byte, error) {
+	order := &pb.Order{} // ✅ properly allocated
+	if err := protojson.Unmarshal([]byte(payload), order); err != nil {
+		return nil, fmt.Errorf("error unmarshalling order: %w", err)
+	}
+
+	return protojson.Marshal(order)
+
+}
 func HandleProductCreated(payload string) ([]byte, error) {
 	product := &pb.Product{} // ✅ properly allocated
 

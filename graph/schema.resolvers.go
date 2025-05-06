@@ -79,12 +79,84 @@ func (r *mutationResolver) CreateCategory(ctx context.Context, input model.Creat
 
 // CreateOrder is the resolver for the createOrder field.
 func (r *mutationResolver) CreateOrder(ctx context.Context, input model.CreateOrderInput) (*model.Order, error) {
-	panic(fmt.Errorf("not implemented: CreateOrder - createOrder"))
+	if input.UserID == "" || len(input.Items) == 0 {
+		return nil, fmt.Errorf("userID and items are required")
+	}
+
+	userId, err := strconv.ParseInt(input.UserID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid userID: %v", err)
+	}
+
+	orderItems := make([]*pb.OrderItem, len(input.Items))
+	// Convert input.Items to orderItems
+	for i, item := range input.Items {
+		productId, err := strconv.ParseInt(item.ProductID, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid productID: %v", err)
+		}
+		orderItems[i] = &pb.OrderItem{
+			ProductId: productId,
+			Quantity:  item.Quantity,
+			UnitPrice: float32(item.UnitPrice),
+		}
+	}
+
+	createOrderRequest := &pb.CreateOrderRequest{
+		UserId: userId,
+		Items:  orderItems,
+	}
+
+	createOrderResponse, err := r.OrderClient.CreateOrder(ctx, createOrderRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create order: %v", err)
+	}
+
+	createdOrderId := strconv.FormatInt(createOrderResponse.Order.Id, 10)
+	createdUserId := strconv.FormatInt(createOrderResponse.Order.UserId, 10)
+
+	createdOrderItems := make([]*model.OrderItem, len(input.Items))
+
+	for _, item := range createOrderResponse.Order.Items {
+		productId := strconv.FormatInt(item.ProductId, 10)
+		createdOrderItems = append(createdOrderItems, &model.OrderItem{
+			ProductID: productId,
+			Quantity:  item.Quantity,
+			UnitPrice: float64(item.UnitPrice),
+		})
+	}
+
+	return &model.Order{
+		ID:         createdOrderId,
+		UserID:     createdUserId,
+		Items:      createdOrderItems,
+		TotalPrice: float64(createOrderResponse.Order.TotalPrice),
+		Status:     createOrderResponse.Order.Status,
+		CreatedAt:  createOrderResponse.Order.CreatedAt.AsTime(),
+		UpdatedAt:  createOrderResponse.Order.UpdatedAt.AsTime(),
+	}, nil
+
 }
 
 // Items is the resolver for the items field.
 func (r *orderResolver) Items(ctx context.Context, obj *model.Order) ([]*model.OrderItem, error) {
-	panic(fmt.Errorf("not implemented: Items - items"))
+
+	if obj == nil || len(obj.Items) == 0 {
+		return nil, fmt.Errorf("items not provided")
+	}
+	createdOrderItems := make([]*model.OrderItem, 0, len(obj.Items)) // zero-length slice with capacity
+
+	for _, item := range obj.Items {
+		createdOrderItems = append(createdOrderItems, &model.OrderItem{
+			ProductID: item.ProductID,
+			Quantity:  item.Quantity,
+			UnitPrice: item.UnitPrice,
+		})
+
+	}
+
+	return createdOrderItems, nil
+
 }
 
 // Category is the resolver for the category field.

@@ -8,4 +8,5 @@ import "github.com/yaninyzwitty/eccomerce-microservices-backend/pb"
 
 type Resolver struct {
 	ProductClient pb.ProductServiceClient
+	OrderClient   pb.OrderServiceClient
 }
