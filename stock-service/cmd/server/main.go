@@ -168,6 +168,14 @@ func main() {
 						stockService := service.NewStockService(stockController)
 						return stockService.CreateStockProduct(ctx, &product)
 					},
+					"order.created": func(payload []byte) error {
+						var order pb.Order
+						if err := protojson.Unmarshal(payload, &order); err != nil {
+							return err
+						}
+						stockService := service.NewStockService(stockController)
+						return stockService.ReserveStockItem(ctx, &order)
+					},
 				}
 
 				eventType := strings.Split(msg.Key(), ":")[0]

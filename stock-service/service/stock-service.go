@@ -20,6 +20,23 @@ func NewStockService(stockController *controller.StockController) *StockService 
 	}
 }
 
+func (s *StockService) ReserveStockItem(ctx context.Context, order *pb.Order) error {
+	if order == nil {
+		return fmt.Errorf("order is nil")
+	}
+
+	reserveStockItem, err := s.stockController.ReserveStock(ctx, &pb.ReserveStockRequest{
+		Order: order,
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to reserve stock", "error", err)
+	}
+	slog.Info("Reserved StockItem with id", "val", reserveStockItem.Order.Id)
+	return nil
+
+}
+
 func (s *StockService) CreateStockProduct(ctx context.Context, product *pb.Product) error {
 	warehouseIds := []int64{134496091390406657, 134496170075549697, 134496187540631553, 134496202942115841, 134496215558582273}
 	randIdx := rand.Intn(len(warehouseIds))

@@ -21,6 +21,24 @@ message StockLevel {
 
 }
 
+message Order {
+  int64 id = 1;
+  int64 user_id = 2;
+  repeated OrderItem items = 3;
+  float total_price = 4;
+  string status = 5; // e.g., "PENDING", "PAID", "CANCELLED", etc.
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message OrderItem {
+  int64 product_id = 1;
+  int32 quantity = 2;
+  float unit_price = 3;
+}
+
+
+
 message UpdateStockRequest {
     int64 product_id = 1;
     int64 warehouse_id = 2;
@@ -67,10 +85,17 @@ message CreateStockResponse {
     StockLevel stocklevel = 1;
 }
  
+ message ReserveStockRequest {
+    Order order = 1;
+ }
+ message ReserveStockResponse {
+    Order order = 1;
+ }
 service StockService {
     rpc CreateStock(CreateStockRequest) returns (CreateStockResponse);
     rpc UpdateStock(UpdateStockRequest) returns (UpdateStockResponse);
     rpc RemoveAllFromStock(RemoveAllFromStockRequest) returns (RemoveAllFromStockResponse);
     rpc AddWarehouse(AddWarehouseRequest) returns (AddWarehouseResponse);
     rpc DeleteWarehouse(DeleteWarehouseRequest) returns (DeleteWarehouseResponse);
+    rpc ReserveStock(ReserveStockRequest) returns (ReserveStockResponse);
 }
