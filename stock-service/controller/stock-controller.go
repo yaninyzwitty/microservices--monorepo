@@ -46,6 +46,22 @@ func (c *StockController) CreateStock(ctx context.Context, req *pb.CreateStockRe
 func (c *StockController) UpdateStock(ctx context.Context, req *pb.UpdateStockRequest) (*pb.UpdateStockResponse, error) {
 	return nil, nil
 }
+
+func (c *StockController) ReserveStock(ctx context.Context, req *pb.ReserveStockRequest) (*pb.ReserveStockResponse, error) {
+	if req.Order == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid order")
+	}
+
+	reserveOrderRes, err := c.stockRepo.ReserveStockItem(ctx, req.Order)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to reserve stock: %v", err)
+	}
+
+	return &pb.ReserveStockResponse{
+		Order: reserveOrderRes,
+	}, nil
+}
 func (c *StockController) RemoveAllFromStock(ctx context.Context, req *pb.RemoveAllFromStockRequest) (*pb.RemoveAllFromStockResponse, error) {
 	return nil, nil
 }

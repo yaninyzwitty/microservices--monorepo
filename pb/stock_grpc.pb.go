@@ -24,6 +24,7 @@ const (
 	StockService_RemoveAllFromStock_FullMethodName = "/stocks.StockService/RemoveAllFromStock"
 	StockService_AddWarehouse_FullMethodName       = "/stocks.StockService/AddWarehouse"
 	StockService_DeleteWarehouse_FullMethodName    = "/stocks.StockService/DeleteWarehouse"
+	StockService_ReserveStock_FullMethodName       = "/stocks.StockService/ReserveStock"
 )
 
 // StockServiceClient is the client API for StockService service.
@@ -35,6 +36,7 @@ type StockServiceClient interface {
 	RemoveAllFromStock(ctx context.Context, in *RemoveAllFromStockRequest, opts ...grpc.CallOption) (*RemoveAllFromStockResponse, error)
 	AddWarehouse(ctx context.Context, in *AddWarehouseRequest, opts ...grpc.CallOption) (*AddWarehouseResponse, error)
 	DeleteWarehouse(ctx context.Context, in *DeleteWarehouseRequest, opts ...grpc.CallOption) (*DeleteWarehouseResponse, error)
+	ReserveStock(ctx context.Context, in *ReserveStockRequest, opts ...grpc.CallOption) (*ReserveStockResponse, error)
 }
 
 type stockServiceClient struct {
@@ -95,6 +97,16 @@ func (c *stockServiceClient) DeleteWarehouse(ctx context.Context, in *DeleteWare
 	return out, nil
 }
 
+func (c *stockServiceClient) ReserveStock(ctx context.Context, in *ReserveStockRequest, opts ...grpc.CallOption) (*ReserveStockResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReserveStockResponse)
+	err := c.cc.Invoke(ctx, StockService_ReserveStock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StockServiceServer is the server API for StockService service.
 // All implementations must embed UnimplementedStockServiceServer
 // for forward compatibility.
@@ -104,6 +116,7 @@ type StockServiceServer interface {
 	RemoveAllFromStock(context.Context, *RemoveAllFromStockRequest) (*RemoveAllFromStockResponse, error)
 	AddWarehouse(context.Context, *AddWarehouseRequest) (*AddWarehouseResponse, error)
 	DeleteWarehouse(context.Context, *DeleteWarehouseRequest) (*DeleteWarehouseResponse, error)
+	ReserveStock(context.Context, *ReserveStockRequest) (*ReserveStockResponse, error)
 	mustEmbedUnimplementedStockServiceServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedStockServiceServer) AddWarehouse(context.Context, *AddWarehou
 }
 func (UnimplementedStockServiceServer) DeleteWarehouse(context.Context, *DeleteWarehouseRequest) (*DeleteWarehouseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteWarehouse not implemented")
+}
+func (UnimplementedStockServiceServer) ReserveStock(context.Context, *ReserveStockRequest) (*ReserveStockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReserveStock not implemented")
 }
 func (UnimplementedStockServiceServer) mustEmbedUnimplementedStockServiceServer() {}
 func (UnimplementedStockServiceServer) testEmbeddedByValue()                      {}
@@ -240,6 +256,24 @@ func _StockService_DeleteWarehouse_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StockService_ReserveStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReserveStockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockServiceServer).ReserveStock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockService_ReserveStock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockServiceServer).ReserveStock(ctx, req.(*ReserveStockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StockService_ServiceDesc is the grpc.ServiceDesc for StockService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +300,10 @@ var StockService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteWarehouse",
 			Handler:    _StockService_DeleteWarehouse_Handler,
+		},
+		{
+			MethodName: "ReserveStock",
+			Handler:    _StockService_ReserveStock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

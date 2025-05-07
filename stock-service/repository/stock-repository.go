@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -18,7 +19,10 @@ type StockRepository struct {
 	pool *pgxpool.Pool
 }
 
-const stockCreatedEvent = "stock.created"
+const (
+	stockCreatedEvent = "stock.created"
+	orderCreatedEvent = "order.created"
+)
 
 func NewStockRepository(pool *pgxpool.Pool) *StockRepository {
 	return &StockRepository{
@@ -105,5 +109,36 @@ func (r *StockRepository) AddWarehouse(ctx context.Context, warehouse *pb.Wareho
 	}
 	warehouseRes.CreatedAt = timestamppb.New(createdAt)
 	return &warehouseRes, nil
+
+}
+
+func (r *StockRepository) ReserveStockItem(ctx context.Context, order *pb.Order) (*pb.Order, error) {
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	updateQuery := `
+	UPDATE stock_levels
+	SET quantity = quantity - $1
+	WHERE product_id = $2 AND quantity >= $1
+	RETURNING quantity`
+	for _, item := range order.Items {
+		var remaining int
+		err := tx.QueryRow(ctx, updateQuery, item.Quantity, item.ProductId).Scan(&remaining)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return nil, fmt.Errorf("insufficient stock for product_id=%d ", item.ProductId)
+			}
+			return nil, fmt.Errorf("update failed for product_id=%d: %w", item.ProductId, err)
+
+		}
+
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("commit tx: %w", err)
+	}
+	return order, nil
 
 }
